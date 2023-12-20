@@ -28,6 +28,7 @@ h3,p {
 }
 
 a{
+    cursor: pointer;
     display: flex;
     align-items: center;
 }

@@ -3,12 +3,15 @@ const tabs = await chrome.tabs.query({
         "http://*/*",
         "https://*/*"
     ],
+    audible: true,
+    // Currently only audible windows are supported
+    // If no other solution, store tabs once audible and then update if they are closed.
 });
 
 const collator = new Intl.Collator();
 tabs.sort((a, b) => collator.compare(a.title, b.title));
 
-const template = document. getElementById("li_template");
+const template = document.getElementById("li_template");
 const elements = new Set();
 for (const tab of tabs) {
     const element = template.content.firstElementChild.cloneNode(true);
