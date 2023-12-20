@@ -79,6 +79,10 @@ async function updatePopup() {
         elements.add(element);
     }
     document.querySelector("ul").append(...elements);
+    document.querySelectorAll('.play-button').forEach(function(button) {
+        button.addEventListener('click', function() {
+            this.classList.toggle('play');
+        });
+    });
 }
-
 document.addEventListener('DOMContentLoaded', updatePopup);

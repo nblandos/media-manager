@@ -12,9 +12,9 @@ ul {
 }
 
 li {
+    display: flex;
     height: 100px;
     padding: 1rem;
-    display: flex;
 }
 li:nth-child(odd) {
     background-color: #ffffff;
@@ -39,20 +39,35 @@ a{
     margin-right: 10px;
 }
 
-.title {
-    white-space: nowrap;
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: nowrap;
     text-align: center;
     flex-grow: 1;
+    justify-content: flex-start
+}
+
+.title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 0.5rem;
 }
 
 .play-button {
+    margin-left: auto;
+    margin-right: auto;
     width: 40px;
     height: 40px;
-    background-image: url('images/play_button.png');
+    background-image: url('images/pause_button.png');
     border: none;
     background-color: transparent;
     background-size: cover;
     cursor: pointer;
+}
+
+.play-button.play {
+    background-image: url('images/play_button.png');
 }
