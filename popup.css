@@ -46,3 +46,13 @@ a{
     text-align: center;
     flex-grow: 1;
 }
+
+.play-button {
+    width: 40px;
+    height: 40px;
+    background-image: url('images/play_button.png');
+    border: none;
+    background-color: transparent;
+    background-size: cover;
+    cursor: pointer;
+}

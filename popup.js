@@ -59,8 +59,8 @@ async function updatePopup() {
 
         const title = tab.title;
 
-        const pauseButton = element.querySelector(".pause-button");
-        pauseButton.addEventListener("click", async () => {
+        const playButton = element.querySelector(".play-button");
+        playButton.addEventListener("click", async () => {
             let website;
             if (tab.url.includes('soundcloud.com')) {
                 website = 'soundcloud';
