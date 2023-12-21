@@ -59,6 +59,22 @@ function hasMediaPlayer() {
     return mediaElements.length > 0;
 }
 
+async function isMediaPaused(tabId) {
+    const results = await chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        function: () => {
+            const mediaElements = document.querySelectorAll('video, audio');
+            for (const media of mediaElements) {
+                if (!media.paused) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    });
+    return results[0].result;
+}
+
 async function updatePopup() {
     const tabs = await chrome.tabs.query({
         url: [
@@ -80,8 +96,6 @@ async function updatePopup() {
         }
     }
 
-    // Currently only audible windows are supported
-    // If no other solution, store tabs once audible and then update if they are closed.
     const template = document.getElementById("li_template");
     const elements = new Set();
     for (const tab of tabsWithMediaPlayer) {
@@ -93,9 +107,11 @@ async function updatePopup() {
         const title = tab.title;
 
         const playButton = element.querySelector(".play-button");
-
-        if (tab.audible) {
+        const isPaused = await isMediaPaused(tab.id);
+        if (!isPaused) {
             playButton.classList.add('pause');
+        } else {
+            playButton.classList.remove('pause');
         }
         
         playButton.addEventListener("click", async () => {
