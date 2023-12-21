@@ -93,6 +93,11 @@ async function updatePopup() {
         const title = tab.title;
 
         const playButton = element.querySelector(".play-button");
+
+        if (tab.audible) {
+            playButton.classList.add('pause');
+        }
+        
         playButton.addEventListener("click", async () => {
             let website;
             if (tab.url.includes('soundcloud.com')) {
@@ -100,13 +105,8 @@ async function updatePopup() {
             } else if (tab.url.includes('spotify.com')) {
                 website = 'spotify';
             }
-            const mediaState = await controlMedia(tab.id, website);
-
-            if (mediaState === 'playing') {
-                playButton.classList.add('pause');
-            } else if (mediaState === 'paused') {
-                playButton.classList.remove('pause');
-            }
+            await controlMedia(tab.id, website);
+            playButton.classList.toggle('pause');
         });
 
         element.querySelector(".title").textContent = title;
