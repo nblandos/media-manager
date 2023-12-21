@@ -4,7 +4,7 @@ async function controlMedia(tabId, website) {
         case 'soundcloud':
             code = function() {
                 const playButton = document.querySelector('.playControl');
-                if (playButton) { // Reduce this to a function
+                if (playButton) {
                     playButton.click();
                 }
             };
@@ -90,8 +90,11 @@ async function updatePopup() {
             target: { tabId: tab.id },
             function: hasMediaPlayer
         });
-
-        if (result[0].result) {
+    
+        const isYouTube = tab.url.includes('youtube');
+        const isWatchOrShorts = tab.url.includes('watch') || tab.url.includes('shorts');
+    
+        if (result[0].result && (!isYouTube || (isYouTube && isWatchOrShorts))) {
             tabsWithMediaPlayer.push(tab);
         }
     }
