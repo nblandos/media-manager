@@ -33,6 +33,30 @@ async function controlMedia(tabId, website) {
         target: { tabId: tabId },
         function: code
     });
+
+    const result = await chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        function: checkMediaState
+    });
+
+    return result[0].result;
+}
+
+function checkMediaState() {
+    const mediaElements = document.querySelectorAll('audio, video');
+    let state = 'paused';
+    for (let media of mediaElements) {
+        if (!media.paused) {
+            state = 'playing';
+            break;
+        }
+    }
+    return state;
+}
+
+function hasMediaPlayer() {
+    const mediaElements = document.querySelectorAll('audio, video');
+    return mediaElements.length > 0;
 }
 
 async function updatePopup() {
@@ -41,17 +65,26 @@ async function updatePopup() {
             "http://*/*",
             "https://*/*"
         ],
-        audible: true,
     });
+
+    const tabsWithMediaPlayer = [];
+
+    for (const tab of tabs) {
+        const result = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            function: hasMediaPlayer
+        });
+
+        if (result[0].result) {
+            tabsWithMediaPlayer.push(tab);
+        }
+    }
+
     // Currently only audible windows are supported
     // If no other solution, store tabs once audible and then update if they are closed.
-
-    const collator = new Intl.Collator();
-    tabs.sort((a, b) => collator.compare(a.title, b.title));
-
     const template = document.getElementById("li_template");
     const elements = new Set();
-    for (const tab of tabs) {
+    for (const tab of tabsWithMediaPlayer) {
         const element = template.content.firstElementChild.cloneNode(true);
 
         const favicon = element.querySelector(".favicon");
@@ -67,7 +100,13 @@ async function updatePopup() {
             } else if (tab.url.includes('spotify.com')) {
                 website = 'spotify';
             }
-            await controlMedia(tab.id, website);
+            const mediaState = await controlMedia(tab.id, website);
+
+            if (mediaState === 'playing') {
+                playButton.classList.add('pause');
+            } else if (mediaState === 'paused') {
+                playButton.classList.remove('pause');
+            }
         });
 
         element.querySelector(".title").textContent = title;
@@ -79,10 +118,6 @@ async function updatePopup() {
         elements.add(element);
     }
     document.querySelector("ul").append(...elements);
-    document.querySelectorAll('.play-button').forEach(function(button) {
-        button.addEventListener('click', function() {
-            this.classList.toggle('play');
-        });
-    });
+
 }
 document.addEventListener('DOMContentLoaded', updatePopup);
