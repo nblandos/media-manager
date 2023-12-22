@@ -1,34 +1,14 @@
-async function controlMedia(tabId, website) {
-    let code;
-    switch (website) {
-        case 'soundcloud':
-            code = function() {
-                const playButton = document.querySelector('.playControl');
-                if (playButton) {
-                    playButton.click();
-                }
-            };
-            break;
-        case 'spotify':
-            code = function() {
-                const playButton = document.querySelector('.vnCew8qzJq3cVGlYFXRI');
-                if (playButton) {
-                    playButton.click();
-                }
-            };
-            break;
-        default:
-            code = function() {
-                Array.from(document.querySelectorAll('audio, video')).forEach(media => {
-                    if (media.paused) {
-                        media.play();
-                    } else {
-                        media.pause();
-                    }
-                });
-            };
-            break;
-    }
+async function controlMedia(tabId) {
+    let code = function() {
+        Array.from(document.querySelectorAll('audio, video')).forEach(media => {
+            if (media.paused) {
+                media.play();
+            } else {
+                media.pause();
+            }
+        });
+    };
+
     await chrome.scripting.executeScript({
         target: { tabId: tabId },
         function: code
@@ -84,9 +64,6 @@ async function updatePlayButton(tabId, playButton) {
     }
 }
 
-const tabsWithMediaPlayer = [];
-
-
 async function updatePopup() {
     const tabs = await chrome.tabs.query({
         url: [
@@ -94,6 +71,8 @@ async function updatePopup() {
             "https://*/*"
         ],
     });
+
+    const tabsWithMediaPlayer = [];
 
     for (const tab of tabs) {
         const result = await chrome.scripting.executeScript({
@@ -113,7 +92,7 @@ async function updatePopup() {
     const elements = new Set();
     for (const tab of tabsWithMediaPlayer) {
         const element = template.content.firstElementChild.cloneNode(true);
-
+        
         const favicon = element.querySelector(".favicon");
         favicon.src = tab.favIconUrl;
 
@@ -122,18 +101,12 @@ async function updatePopup() {
         const playButton = element.querySelector(".play-button");
         playButton.dataset.tabId = tab.id;
         updatePlayButton(tab.id, playButton);
+        setInterval(() => updatePlayButton(tab.id, playButton), 500);
         
         playButton.addEventListener("click", async () => {
-            let website;
-            if (tab.url.includes('soundcloud.com')) {
-                website = 'soundcloud';
-            } else if (tab.url.includes('spotify.com')) {
-                website = 'spotify';
-            }
-            await controlMedia(tab.id, website);
+            await controlMedia(tab.id);
             playButton.classList.toggle('pause');
         });
-        setInterval(() => updatePlayButton(tab.id, playButton), 500);
 
         element.querySelector(".title").textContent = title;
         element.querySelector("a").addEventListener("click", async () => {
@@ -147,3 +120,5 @@ async function updatePopup() {
 }
 
 document.addEventListener("DOMContentLoaded", updatePopup);
+
+
