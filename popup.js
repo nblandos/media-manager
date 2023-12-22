@@ -75,6 +75,18 @@ async function isMediaPaused(tabId) {
     return results[0].result;
 }
 
+async function updatePlayButton(tabId, playButton) {
+    const isPaused = await isMediaPaused(tabId);
+    if (!isPaused) {
+        playButton.classList.add('pause');
+    } else {
+        playButton.classList.remove('pause');
+    }
+}
+
+const tabsWithMediaPlayer = [];
+
+
 async function updatePopup() {
     const tabs = await chrome.tabs.query({
         url: [
@@ -82,8 +94,6 @@ async function updatePopup() {
             "https://*/*"
         ],
     });
-
-    const tabsWithMediaPlayer = [];
 
     for (const tab of tabs) {
         const result = await chrome.scripting.executeScript({
@@ -110,12 +120,8 @@ async function updatePopup() {
         const title = tab.title;
 
         const playButton = element.querySelector(".play-button");
-        const isPaused = await isMediaPaused(tab.id);
-        if (!isPaused) {
-            playButton.classList.add('pause');
-        } else {
-            playButton.classList.remove('pause');
-        }
+        playButton.dataset.tabId = tab.id;
+        updatePlayButton(tab.id, playButton);
         
         playButton.addEventListener("click", async () => {
             let website;
@@ -127,6 +133,7 @@ async function updatePopup() {
             await controlMedia(tab.id, website);
             playButton.classList.toggle('pause');
         });
+        setInterval(() => updatePlayButton(tab.id, playButton), 500);
 
         element.querySelector(".title").textContent = title;
         element.querySelector("a").addEventListener("click", async () => {
@@ -137,6 +144,6 @@ async function updatePopup() {
         elements.add(element);
     }
     document.querySelector("ul").append(...elements);
-
 }
-document.addEventListener('DOMContentLoaded', updatePopup);
+
+document.addEventListener("DOMContentLoaded", updatePopup);
